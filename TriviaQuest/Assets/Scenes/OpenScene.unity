@@ -152,6 +152,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86d5aeaa928c6b742a8b2936e0f5f802, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  correctScore: 0
+  incorrectScore: 0
+  timeoutScore: 0
+  leaderboardURLFormatEditor: https://magegamessite.web.app/case1/leaderboard_page_{0}.json
+  leaderboardURLFormatBuild: http://localhost:8080/leaderboard?page={0}
+  questionsURL: https://magegamessite.web.app/case1/questions.json
 --- !u!4 &992158815
 Transform:
   m_ObjectHideFlags: 0
