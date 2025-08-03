@@ -7,7 +7,7 @@ using TMPro;
 
 public class M_LeaderBoard : MonoBehaviour
 {
-    private LeaderboardData currentData;
+    private LeaderboardData _currentData;
     
     [Header("Leaderboard UI")]
     [SerializeField] private GameObject _slotPrefab;
@@ -68,7 +68,7 @@ public class M_LeaderBoard : MonoBehaviour
     public void FinishLeaderboard()
     {
         _currentPage = 0;
-        currentData = null;
+        _currentData = null;
     }
     
     private void CreateSlots()
@@ -91,7 +91,7 @@ public class M_LeaderBoard : MonoBehaviour
     private IEnumerator LoadLeaderboardPage(int page)
     {
         yield return StartCoroutine(FetchLeaderboard(page));
-        var data = currentData;
+        var data = _currentData;
 
         _isLastPage = data.is_last;
 
@@ -121,7 +121,7 @@ public class M_LeaderBoard : MonoBehaviour
             _lbPageText.text = $"Page {_currentPage + 1}";
     }
     
-    public IEnumerator FetchLeaderboard(int page = 0)
+    private IEnumerator FetchLeaderboard(int page = 0)
     {
         string url = string.Format(_leaderboardURL, page);
         UnityWebRequest request = UnityWebRequest.Get(url);
@@ -131,19 +131,19 @@ public class M_LeaderBoard : MonoBehaviour
         {
             try
             {
-                currentData = JsonUtility.FromJson<LeaderboardData>(request.downloadHandler.text);
+                _currentData = JsonUtility.FromJson<LeaderboardData>(request.downloadHandler.text);
                 Debug.Log($"Leaderboard page {page} fetched successfully!");
             }
             catch (System.Exception ex)
             {
                 Debug.LogError("JSON Parse Error: " + ex.Message);
-                currentData = null;
+                _currentData = null;
             }
         }
         else
         {
             Debug.LogError("Leaderboard fetch failed: " + request.error);
-            currentData = null;
+            _currentData = null;
         }
     }
 
