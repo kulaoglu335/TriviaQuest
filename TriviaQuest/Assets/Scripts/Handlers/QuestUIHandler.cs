@@ -136,8 +136,7 @@ public class QuestUIHandler : MonoBehaviour
     public void FinishQuestUIs()
     {
         topPanel.transform.DOLocalMove(new Vector3(0, 500, 0), 0.5f).SetRelative(true);
-        questionPanel.transform.DOLocalMove(new Vector3(-1000, 0, 0), 0.5f).SetRelative(true);
-        
+        questionPanel.transform.DOLocalMove(new Vector3(leftSafePlaceTarget.localPosition.x,0,0), 0.5f).SetRelative(true);
         scorePanel.transform.DOMove(scoreBarEndPosTarget.transform.position, 0.5f);
         
         endMainMenuButton.transform.localScale = Vector3.zero;
