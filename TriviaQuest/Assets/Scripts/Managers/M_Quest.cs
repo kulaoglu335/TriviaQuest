@@ -200,7 +200,7 @@ public class M_Quest : MonoBehaviour
                 choices = choices
             };
         }
-        catch (Exception e)
+        catch
         {
             return null;
         }

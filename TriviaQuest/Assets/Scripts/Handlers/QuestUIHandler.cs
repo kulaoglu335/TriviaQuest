@@ -44,6 +44,26 @@ public class QuestUIHandler : MonoBehaviour
         _scorePanelStartPosition = scorePanel.anchoredPosition;
     }
     
+    public void StartQuestUIs()
+    {
+        topPanel.anchoredPosition = _topPanelStartPosition;
+        questionPanel.anchoredPosition = _questionPanelStartPosition;
+        scorePanel.anchoredPosition = _scorePanelStartPosition;
+        endMainMenuButton.SetActive(false);
+        scoreUI.ResetScore();
+    }
+
+    public void FinishQuestUIs()
+    {
+        topPanel.transform.DOLocalMove(new Vector3(0, 500, 0), 0.5f).SetRelative(true);
+        questionPanel.transform.DOLocalMove(new Vector3(leftSafePlaceTarget.localPosition.x,0,0), 0.5f).SetRelative(true);
+        scorePanel.transform.DOMove(scoreBarEndPosTarget.transform.position, 0.5f);
+        
+        endMainMenuButton.transform.localScale = Vector3.zero;
+        endMainMenuButton.SetActive(true);
+        endMainMenuButton.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
+    }
+    
     public void SetQuestionData(QuestionData questionData,Action timerOnCompleteCallback,int currentIndex,int totalQuestionAmount,float questionDuration)
     {
         questionText.text = questionData.question;
@@ -122,25 +142,5 @@ public class QuestUIHandler : MonoBehaviour
         _answerEffectFadeTween = incorrectAnswerEffectText.DOFade(0, 0.5f).SetDelay(1f);
         
         scoreUI.UpdateScore(newScore, false);
-    }
-
-    public void StartQuestUIs()
-    {
-        topPanel.anchoredPosition = _topPanelStartPosition;
-        questionPanel.anchoredPosition = _questionPanelStartPosition;
-        scorePanel.anchoredPosition = _scorePanelStartPosition;
-        endMainMenuButton.SetActive(false);
-        scoreUI.ResetScore();
-    }
-
-    public void FinishQuestUIs()
-    {
-        topPanel.transform.DOLocalMove(new Vector3(0, 500, 0), 0.5f).SetRelative(true);
-        questionPanel.transform.DOLocalMove(new Vector3(leftSafePlaceTarget.localPosition.x,0,0), 0.5f).SetRelative(true);
-        scorePanel.transform.DOMove(scoreBarEndPosTarget.transform.position, 0.5f);
-        
-        endMainMenuButton.transform.localScale = Vector3.zero;
-        endMainMenuButton.SetActive(true);
-        endMainMenuButton.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
     }
 }

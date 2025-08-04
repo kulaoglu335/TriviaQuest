@@ -50,6 +50,11 @@ public class M_Menu : MonoBehaviour
         playButton.Init(buttonsOpenAnimDuration,buttonsCloseAnimDuration,0, leftSafePlaceTarget);
         leaderBoardButton.Init(buttonsOpenAnimDuration,buttonsCloseAnimDuration,buttonsDelayDuration, leftSafePlaceTarget);
         
+        SetReadyMenuUI();
+    }
+
+    private void SetReadyMenuUI()
+    {
         lbCanvas.SetActive(false);
         lbPanel.SetActive(false);
         qCanvas.SetActive(false);
@@ -104,10 +109,6 @@ public class M_Menu : MonoBehaviour
     
     public void CloseQuestUI()
     {
-        qPanel.SetActive(false);
-        qCanvas.SetActive(false);
-        menuCanvas.SetActive(true);
-        playButton.OpenEffect();
-        leaderBoardButton.OpenEffect();
+        SetReadyMenuUI();
     }
 }
