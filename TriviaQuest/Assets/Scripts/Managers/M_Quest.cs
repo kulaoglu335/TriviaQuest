@@ -12,132 +12,111 @@ using UnityEngine.Networking;
 public class M_Quest : MonoBehaviour
 {
     private QuestionData[] _questions;
-    private int _currentIndex;
-
-    [Header("Quest UI")]
-    [SerializeField] private List<UI_AnswerButton> answerButtons;
-    [SerializeField] private TextMeshProUGUI questionText;
-    [SerializeField] private UI_Category categoryUI;
-    [SerializeField] private UI_Timer timerUI;
-    [SerializeField] private UI_Goal goalUI;
-    [SerializeField] private Color32 normalAnswerColor;
-    [SerializeField] private Color32 correctAnswerColor;
-    [SerializeField] private Color32 incorrectAnswerColor;
+    public QuestUIHandler uiHandler;
     
-    [Space(10)]
-    [SerializeField] private List<string> correctAnswerStrings;
-    [SerializeField] private List<string> incorrectAnswerStrings;
-    [SerializeField] private TextMeshProUGUI correctAnswerEffectText;
-    [SerializeField] private TextMeshProUGUI incorrectAnswerEffectText;
-    private Tween _answerEffectScaleTween;
-    private Tween _answerEffectFadeTween;
+    private int _currentIndex;
+    private bool _timerActive;
+    private float _questionDuration;
 
     [Space(10)]
     [SerializeField] private float buttonOpenEffectDuration;
     [SerializeField] private float buttonCloseEffectDuration;
     [SerializeField] private float buttonEffectDelay;
+    private Tween _answerEffectScaleTween;
+    private Tween _answerEffectFadeTween;
+
+    private int _correctScore;
+    private int _incorrectScore;
+    private int _timeOutScore;
+    private int _totalScore;
 
     private void Awake()
     {
         M_Game.I.RegisterQuest(this);
     }
-    public void Init()
+    public void Init(int correctScore, int incorrectScore, int timeOutScore, float questionDuration)
     {
-        for (int i = 0; i < answerButtons.Count; i++)
+        _correctScore = correctScore;
+        _incorrectScore = incorrectScore;
+        _timeOutScore = timeOutScore;
+        _questionDuration = questionDuration;
+        
+        for (int i = 0; i < uiHandler.answerButtons.Count; i++)
         {
-            answerButtons[i].SetButtonFuncs(i, OnClickAnswer,normalAnswerColor, correctAnswerColor, incorrectAnswerColor,buttonOpenEffectDuration,buttonCloseEffectDuration,buttonEffectDelay);
+            uiHandler.answerButtons[i].InitButton(
+                i, 
+                OnClickAnswer,
+                buttonOpenEffectDuration,
+                buttonCloseEffectDuration,
+                buttonEffectDelay);
         }
     }
 
-    public void StartQuest(string questionURL)
+    public void StartQuest(string questionURL,float delay)
     {
-        StartCoroutine(LoadQuestions(questionURL));
+        _currentIndex = 0;
+        _totalScore = 0;
+        _timerActive = true;
+        StartCoroutine(LoadQuestions(questionURL,delay));
     }
     public void FinishQuest()
     {
         
     }
 
-    private void SetReadyToQuestion(int index)
-    {
-        questionText.text = _questions[index].question;
-        for (int i = 0; i < answerButtons.Count; i++)
-        {
-            answerButtons[i].SetReady(_questions[index].choices[i]);
-        }
-        
-        correctAnswerEffectText.gameObject.SetActive(false);
-        incorrectAnswerEffectText.gameObject.SetActive(false);
-    }
     private void OnClickAnswer(int buttonIndex)
     {
+        if(!_timerActive) return;
+        _timerActive = false;
+        
+        uiHandler.StopTimer();
+        
         char selectedChar = (char)('A' + buttonIndex);
         string selectedAnswer = selectedChar.ToString();
         string correctAnswer = _questions[_currentIndex].answer;
         
         if (selectedAnswer == correctAnswer)
         {
-            answerButtons[buttonIndex].CorrectAnswerEffect();
-            CorrectEffect();
+            _totalScore += _correctScore;
+            uiHandler.HighlightAnswer(buttonIndex,true);
+            uiHandler.CorrectEffect(_totalScore);
         }
         else
         {
+            _totalScore += _incorrectScore;
             int correctIndex = _questions[_currentIndex].answer[0] - 'A';
-            answerButtons[buttonIndex].IncorrectAnswerEffect();
-            answerButtons[correctIndex].CorrectAnswerEffect();
-            IncorrectEffect();
+            uiHandler.HighlightAnswer(buttonIndex,false);
+            uiHandler.HighlightAnswer(correctIndex,true);
+            uiHandler.IncorrectEffect(_totalScore);
         }
 
         StartCoroutine(SetReadyToNextQuestion());
-        
     }
-    private void CorrectEffect()
+    private void TimeOut()
     {
-        int randomIndex = UnityEngine.Random.Range(0, correctAnswerStrings.Count);
-        correctAnswerEffectText.text = correctAnswerStrings[randomIndex];
+        _timerActive = false;
         
-        correctAnswerEffectText.transform.localScale = Vector3.zero;
-        Color c = correctAnswerEffectText.color;
-        c.a = 1.0f;
-        correctAnswerEffectText.color = c;
-        correctAnswerEffectText.gameObject.SetActive(true);
-        if(_answerEffectScaleTween != null) _answerEffectScaleTween.Kill();
-        if(_answerEffectFadeTween != null) _answerEffectFadeTween.Kill();
-        _answerEffectScaleTween = correctAnswerEffectText.transform.DOScale(Vector3.one, 0.6f).SetEase(Ease.OutBack);
-        _answerEffectFadeTween = correctAnswerEffectText.DOFade(0, 0.5f).SetDelay(1f);
-    }
-    private void IncorrectEffect()
-    {
-        int randomIndex = UnityEngine.Random.Range(0, incorrectAnswerStrings.Count);
-        incorrectAnswerEffectText.text = incorrectAnswerStrings[randomIndex];
-        
-        incorrectAnswerEffectText.transform.localScale = Vector3.zero;
-        Color c = incorrectAnswerEffectText.color;
-        c.a = 1.0f;
-        incorrectAnswerEffectText.color = c;
-        incorrectAnswerEffectText.gameObject.SetActive(true);
-        if(_answerEffectScaleTween != null) _answerEffectScaleTween.Kill();
-        if(_answerEffectFadeTween != null) _answerEffectFadeTween.Kill();
-        _answerEffectScaleTween = incorrectAnswerEffectText.transform.DOScale(Vector3.one, 0.6f).SetEase(Ease.OutBack);
-        _answerEffectFadeTween = incorrectAnswerEffectText.DOFade(0, 0.5f).SetDelay(1f);
+        int correctIndex = _questions[_currentIndex].answer[0] - 'A';
+        uiHandler.HighlightAnswer(correctIndex,true);
+        _totalScore += _timeOutScore;
+        uiHandler.IncorrectEffect(_totalScore);
+        StartCoroutine(SetReadyToNextQuestion());
     }
     private IEnumerator SetReadyToNextQuestion()
     {
         yield return new WaitForSeconds(1f);
         
-        for (int i = 0; i < answerButtons.Count; i++)
-        {
-            answerButtons[i].CloseEffect();
-        }
+        uiHandler.CloseButtonUIs();
 
-        float buttonEffectsWaitTime = buttonCloseEffectDuration + ((answerButtons.Count - 1) * buttonEffectDelay) + 0.5f;
+        float buttonEffectsWaitTime = buttonCloseEffectDuration + (3 * buttonEffectDelay) + 0.5f;
         yield return new WaitForSeconds(buttonEffectsWaitTime);
         
         _currentIndex++;
-        SetReadyToQuestion(_currentIndex);
+        uiHandler.SetQuestionData(_questions[_currentIndex],TimeOut,_currentIndex,_questions.Length,_questionDuration);
+        _timerActive = true;
     }
     
-    private IEnumerator LoadQuestions(string url)
+    private IEnumerator LoadQuestions(string url,float delay)
     {
         UnityWebRequest req = UnityWebRequest.Get(url);
         yield return req.SendWebRequest();
@@ -146,15 +125,11 @@ public class M_Quest : MonoBehaviour
         {
             string rawJson = req.downloadHandler.text;
             ParseBrokenJson(rawJson);
-            
-            _currentIndex = 0;
-        }
-        else
-        {
-            Debug.LogError("Question fetch failed: " + req.error);
         }
         
-        SetReadyToQuestion(_currentIndex);
+        yield return new WaitForSeconds(delay);
+        
+        uiHandler.SetQuestionData(_questions[_currentIndex],TimeOut,_currentIndex,_questions.Length,_questionDuration);
     }
     private void ParseBrokenJson(string rawJson)
     {
@@ -186,8 +161,6 @@ public class M_Quest : MonoBehaviour
         }
 
         _questions = parsedQuestions.ToArray();
-        _currentIndex = 0;
-        SetReadyToQuestion(_currentIndex);
     }
     private QuestionData ParseSingleQuestion(string raw)
     {

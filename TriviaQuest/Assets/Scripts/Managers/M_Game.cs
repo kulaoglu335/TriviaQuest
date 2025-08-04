@@ -11,6 +11,7 @@ public class M_Game : MonoBehaviour
     public int correctScore;
     public int incorrectScore;
     public int timeoutScore;
+    public float questionDuration;
 
     [Header("Data Configs")]
     [SerializeField] private string leaderboardURLFormatEditor;
@@ -31,7 +32,7 @@ public class M_Game : MonoBehaviour
         SceneManager.LoadScene(1);
     }
 
-    #region Registers
+    #region Dependencies
 
     public void RegisterMenu(M_Menu menu)
     {
@@ -39,7 +40,6 @@ public class M_Game : MonoBehaviour
         _menu.Init();
         
         _menu.OnLeaderboardOpenClicked = OpenLeaderBoard;
-
         _menu.OnLeaderboardCloseClicked = CloseLeaderBoard;
     }
 
@@ -52,10 +52,9 @@ public class M_Game : MonoBehaviour
     public void RegisterQuest(M_Quest quest)
     {
         _quest = quest;
-        _quest.Init();
+        _quest.Init(correctScore, incorrectScore, timeoutScore, questionDuration);
         
         _menu.OnQuestOpenClicked = OpenQuest;
-
         _menu.OnQuestCloseClicked = CloseQuest;
     }
 
@@ -65,26 +64,20 @@ public class M_Game : MonoBehaviour
 
     private void OpenLeaderBoard()
     {
-#if UNITY_EDITOR
-        string url = leaderboardURLFormatEditor;
-#else
-            string url = leaderboardURLFormatBuild;
-#endif
-        
-        _leaderBoard.StartLeaderboard(url);
-        _menu.OpenLeaderboardUI();
+        _leaderBoard.StartLeaderboard(GetLeaderboardUrl(),_menu.buttonsCloseAnimDuration);
+        StartCoroutine(_menu.OpenLeaderboardUI());
     }
 
     private void CloseLeaderBoard()
     {
         _leaderBoard.FinishLeaderboard();
-        _menu.CloseLeaderboardUI();
+        StartCoroutine(_menu.CloseLeaderboardUI());
     }
 
     private void OpenQuest()
     {
-        _quest.StartQuest(questionsURL);
-        _menu.OpenQuestUI();
+        _quest.StartQuest(questionsURL,_menu.buttonsCloseAnimDuration);
+        StartCoroutine(_menu.OpenQuestUI());
     }
 
     private void CloseQuest()
@@ -101,5 +94,13 @@ public class M_Game : MonoBehaviour
         {
             
         }
+    }
+    public string GetLeaderboardUrl()
+    {
+        #if UNITY_EDITOR
+            return leaderboardURLFormatEditor;
+        #else
+            return leaderboardURLFormatBuild;
+        #endif
     }
 }
