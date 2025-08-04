@@ -27,8 +27,7 @@ public class M_Game : MonoBehaviour
         if (I != null && I != this) { Destroy(gameObject); return; }
         I = this;
         DontDestroyOnLoad(gameObject);
-
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        
         SceneManager.LoadScene(1);
     }
 
@@ -76,25 +75,16 @@ public class M_Game : MonoBehaviour
 
     private void OpenQuest()
     {
-        _quest.StartQuest(questionsURL,_menu.buttonsCloseAnimDuration);
+        _quest.StartQuest(questionsURL,_menu.buttonsCloseAnimDuration + _menu.buttonsDelayDuration);
         StartCoroutine(_menu.OpenQuestUI());
     }
 
     private void CloseQuest()
     {
-        _quest.FinishQuest();
         _menu.CloseQuestUI();
     }
 
     #endregion
-    
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        if (scene.buildIndex == 1)
-        {
-            
-        }
-    }
     public string GetLeaderboardUrl()
     {
         #if UNITY_EDITOR

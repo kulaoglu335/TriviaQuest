@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 using UnityEngine;
 using DG.Tweening;
 using TMPro;
@@ -9,10 +10,19 @@ public class QuestUIHandler : MonoBehaviour
 {
     [Header("UI References")]
     public List<UI_AnswerButton> answerButtons;
+    public RectTransform leftSafePlaceTarget;
     [SerializeField] private TextMeshProUGUI questionText;
     [SerializeField] private UI_Category categoryUI;
     [SerializeField] private UI_Timer timerUI;
     [SerializeField] private UI_Score scoreUI;
+    [SerializeField] private RectTransform topPanel;
+    [SerializeField] private RectTransform questionPanel;
+    [SerializeField] private RectTransform scorePanel;
+    [SerializeField] private GameObject endMainMenuButton;
+    [SerializeField] private Transform scoreBarEndPosTarget;
+    private Vector3 _topPanelStartPosition;
+    private Vector3 _questionPanelStartPosition;
+    private Vector3 _scorePanelStartPosition;
     
     [Header("Feedback Text References")]
     [SerializeField] private List<string> correctAnswerStrings;
@@ -26,6 +36,13 @@ public class QuestUIHandler : MonoBehaviour
     [SerializeField] private Color32 normalAnswerColor;
     [SerializeField] private Color32 correctAnswerColor;
     [SerializeField] private Color32 incorrectAnswerColor;
+
+    private void Start()
+    {
+        _topPanelStartPosition = topPanel.anchoredPosition;
+        _questionPanelStartPosition = questionPanel.anchoredPosition;
+        _scorePanelStartPosition = scorePanel.anchoredPosition;
+    }
     
     public void SetQuestionData(QuestionData questionData,Action timerOnCompleteCallback,int currentIndex,int totalQuestionAmount,float questionDuration)
     {
@@ -42,13 +59,17 @@ public class QuestUIHandler : MonoBehaviour
         
         correctAnswerEffectText.gameObject.SetActive(false);
         incorrectAnswerEffectText.gameObject.SetActive(false);
-        
-        OpenButtonUIs();
     }
 
     public void StopTimer()
     {
         timerUI.StopTimer();
+    }
+    
+    public void HighlightAnswer(int index, bool correct)
+    {
+        var color = correct ? correctAnswerColor : incorrectAnswerColor;
+        answerButtons[index].SetColor(color);
     }
 
     public void OpenButtonUIs()
@@ -67,12 +88,6 @@ public class QuestUIHandler : MonoBehaviour
         }
     }
     
-    public void HighlightAnswer(int index, bool correct)
-    {
-        var color = correct ? correctAnswerColor : incorrectAnswerColor;
-        answerButtons[index].SetColor(color);
-    }
-    
     public void CorrectEffect(int newScore)
     {
         int randomIndex = UnityEngine.Random.Range(0, correctAnswerStrings.Count);
@@ -88,7 +103,7 @@ public class QuestUIHandler : MonoBehaviour
         _answerEffectScaleTween = correctAnswerEffectText.transform.DOScale(Vector3.one, 0.6f).SetEase(Ease.OutBack);
         _answerEffectFadeTween = correctAnswerEffectText.DOFade(0, 0.5f).SetDelay(1f);
         
-        scoreUI.UpdateScore(newScore);
+        scoreUI.UpdateScore(newScore,true);
     }
     
     public void IncorrectEffect(int newScore)
@@ -106,6 +121,27 @@ public class QuestUIHandler : MonoBehaviour
         _answerEffectScaleTween = incorrectAnswerEffectText.transform.DOScale(Vector3.one, 0.6f).SetEase(Ease.OutBack);
         _answerEffectFadeTween = incorrectAnswerEffectText.DOFade(0, 0.5f).SetDelay(1f);
         
-        scoreUI.UpdateScore(newScore);
+        scoreUI.UpdateScore(newScore, false);
+    }
+
+    public void StartQuestUIs()
+    {
+        topPanel.anchoredPosition = _topPanelStartPosition;
+        questionPanel.anchoredPosition = _questionPanelStartPosition;
+        scorePanel.anchoredPosition = _scorePanelStartPosition;
+        endMainMenuButton.SetActive(false);
+        scoreUI.ResetScore();
+    }
+
+    public void FinishQuestUIs()
+    {
+        topPanel.transform.DOLocalMove(new Vector3(0, 500, 0), 0.5f).SetRelative(true);
+        questionPanel.transform.DOLocalMove(new Vector3(-1000, 0, 0), 0.5f).SetRelative(true);
+        
+        scorePanel.transform.DOMove(scoreBarEndPosTarget.transform.position, 0.5f);
+        
+        endMainMenuButton.transform.localScale = Vector3.zero;
+        endMainMenuButton.SetActive(true);
+        endMainMenuButton.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
     }
 }

@@ -13,10 +13,6 @@ public class M_Quest : MonoBehaviour
 {
     private QuestionData[] _questions;
     public QuestUIHandler uiHandler;
-    
-    private int _currentIndex;
-    private bool _timerActive;
-    private float _questionDuration;
 
     [Space(10)]
     [SerializeField] private float buttonOpenEffectDuration;
@@ -29,6 +25,10 @@ public class M_Quest : MonoBehaviour
     private int _incorrectScore;
     private int _timeOutScore;
     private int _totalScore;
+    
+    private int _currentIndex;
+    private bool _timerActive;
+    private float _questionDuration;
 
     private void Awake()
     {
@@ -48,7 +48,8 @@ public class M_Quest : MonoBehaviour
                 OnClickAnswer,
                 buttonOpenEffectDuration,
                 buttonCloseEffectDuration,
-                buttonEffectDelay);
+                buttonEffectDelay,
+                uiHandler.leftSafePlaceTarget);
         }
     }
 
@@ -57,11 +58,8 @@ public class M_Quest : MonoBehaviour
         _currentIndex = 0;
         _totalScore = 0;
         _timerActive = true;
+        uiHandler.StartQuestUIs();
         StartCoroutine(LoadQuestions(questionURL,delay));
-    }
-    public void FinishQuest()
-    {
-        
     }
 
     private void OnClickAnswer(int buttonIndex)
@@ -102,6 +100,7 @@ public class M_Quest : MonoBehaviour
         uiHandler.IncorrectEffect(_totalScore);
         StartCoroutine(SetReadyToNextQuestion());
     }
+    
     private IEnumerator SetReadyToNextQuestion()
     {
         yield return new WaitForSeconds(1f);
@@ -110,12 +109,22 @@ public class M_Quest : MonoBehaviour
 
         float buttonEffectsWaitTime = buttonCloseEffectDuration + (3 * buttonEffectDelay) + 0.5f;
         yield return new WaitForSeconds(buttonEffectsWaitTime);
-        
-        _currentIndex++;
-        uiHandler.SetQuestionData(_questions[_currentIndex],TimeOut,_currentIndex,_questions.Length,_questionDuration);
-        _timerActive = true;
+
+        if (_currentIndex < _questions.Length - 1)
+        {
+            _currentIndex++;
+            uiHandler.SetQuestionData(_questions[_currentIndex],TimeOut,_currentIndex,_questions.Length,_questionDuration);
+            uiHandler.OpenButtonUIs();
+            _timerActive = true;
+        }
+        else
+        {
+            uiHandler.FinishQuestUIs();
+        }
     }
-    
+
+    #region Load And Parser
+
     private IEnumerator LoadQuestions(string url,float delay)
     {
         UnityWebRequest req = UnityWebRequest.Get(url);
@@ -130,6 +139,7 @@ public class M_Quest : MonoBehaviour
         yield return new WaitForSeconds(delay);
         
         uiHandler.SetQuestionData(_questions[_currentIndex],TimeOut,_currentIndex,_questions.Length,_questionDuration);
+        uiHandler.OpenButtonUIs();
     }
     private void ParseBrokenJson(string rawJson)
     {
@@ -138,19 +148,16 @@ public class M_Quest : MonoBehaviour
 
         if (start == -1 || end == -1)
         {
-            Debug.LogError("JSON formatı tanınamadı.");
             return;
         }
 
         string listContent = rawJson.Substring(start, end - start + 2);
-
-        // Normalize: Tüm aralar tek satıra gelsin
-        listContent = Regex.Replace(listContent, @"\r\n?|\n", " "); // Satır sonlarını temizle
-        listContent = Regex.Replace(listContent, @"\s+", " ");     // Gereksiz boşlukları sil
+        
+        listContent = Regex.Replace(listContent, @"\r\n?|\n", " ");
+        listContent = Regex.Replace(listContent, @"\s+", " ");
 
         List<QuestionData> parsedQuestions = new List<QuestionData>();
-
-        // Split için daha sağlam tanım
+        
         string[] rawQuestions = Regex.Split(listContent, @"(?<=\}),(?=\s*\{)");
 
         foreach (string qRaw in rawQuestions)
@@ -175,20 +182,15 @@ public class M_Quest : MonoBehaviour
             Match choiceMatch = Regex.Match(clean, @"""choices""\s*:\s*\[(.*?)\]");
             if (!choiceMatch.Success)
             {
-                Debug.LogError("Choices parse failed");
                 return null;
             }
 
             string rawChoices = choiceMatch.Groups[1].Value;
-
-            // Tüm itemleri çek: Tırnak içi olanları tek tek al
+            
             var choices = Regex.Matches(rawChoices, @"""(.*?)""")
                 .Cast<Match>()
                 .Select(m => m.Groups[1].Value)
                 .ToArray();
-
-            if (choices.Length != 4)
-                Debug.LogWarning($"Choice count issue: {choices.Length} - Soru: {question}");
 
             return new QuestionData
             {
@@ -200,8 +202,9 @@ public class M_Quest : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError("ParseSingleQuestion Error: " + e.Message);
             return null;
         }
     }
+
+    #endregion
 }

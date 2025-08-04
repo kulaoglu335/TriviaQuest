@@ -8,15 +8,15 @@ using TMPro;
 public class M_LeaderBoard : MonoBehaviour
 {
     private LeaderboardData _currentData;
+    public LeaderboardUIHandler uiHandler;
     
     [Header("Leaderboard UI")]
-    [SerializeField] private GameObject _slotPrefab;
-    [SerializeField] private Transform _slotParent;
-    [SerializeField] private int _slotsPerPage = 10;
-    [SerializeField] private float _slotSpacing = 80f;
-    [SerializeField] private Button _lbNextPageButton;
-    [SerializeField] private Button _lbPreviousPageButton;
-    [SerializeField] private TextMeshProUGUI _lbPageText;
+    [SerializeField] private GameObject slotPrefab;
+    [SerializeField] private Transform slotParent;
+    [SerializeField] private Button lbNextPageButton;
+    [SerializeField] private Button lbPreviousPageButton;
+    [SerializeField] private float slotSpacing;
+    [SerializeField] private int slotsPerPage;
 
     [SerializeField] private float slotMoveDuration;
     [SerializeField] private float slotMoveDelay;
@@ -35,20 +35,20 @@ public class M_LeaderBoard : MonoBehaviour
 
     public void Init()
     {
-        _lbNextPageButton.onClick.AddListener(OnClick_NextPage);
-        _lbPreviousPageButton.onClick.AddListener(OnClick_PreviousPage);
+        lbNextPageButton.onClick.AddListener(OnClick_NextPage);
+        lbPreviousPageButton.onClick.AddListener(OnClick_PreviousPage);
         
         CreateSlots();
     }
     
     private void CreateSlots()
     {
-        for (int i = 0; i < _slotsPerPage; i++)
+        for (int i = 0; i < slotsPerPage; i++)
         {
-            GameObject obj = Instantiate(_slotPrefab, _slotParent);
+            GameObject obj = Instantiate(slotPrefab, slotParent);
             RectTransform rt = obj.GetComponent<RectTransform>();
             
-            float spacing = -_slotSpacing;
+            float spacing = -slotSpacing;
             Vector2 anchoredPos = new Vector2(0f, i * spacing);
             rt.anchoredPosition = anchoredPos;
 
@@ -100,7 +100,7 @@ public class M_LeaderBoard : MonoBehaviour
         var data = _currentData;
 
         _isLastPage = data.is_last;
-        UpdatePageText();
+        uiHandler.UpdatePageText(_currentPage);
 
         if (isFirstOpen)
         {
@@ -130,12 +130,6 @@ public class M_LeaderBoard : MonoBehaviour
             StartCoroutine(_spawnedSlots[i].ApplyAnim(slotMoveDuration, i*slotMoveDelay, firstAnimType,secondAnimType,slotHorizontalDistance,data.data[i]));
         }
     }
-
-    private void UpdatePageText()
-    {
-        if (_lbPageText != null)
-            _lbPageText.text = (_currentPage + 1).ToString();
-    }
     
     private IEnumerator FetchLeaderboard(int page = 0)
     {
@@ -149,7 +143,7 @@ public class M_LeaderBoard : MonoBehaviour
             {
                 _currentData = JsonUtility.FromJson<LeaderboardData>(request.downloadHandler.text);
             }
-            catch (System.Exception ex)
+            catch
             {
                 _currentData = null;
             }

@@ -15,8 +15,9 @@ public class UI_MenuButton : MonoBehaviour
     private float _delay;
     
     private RectTransform _rectTransform;
+    private RectTransform _leftSafePlaceTarget;
     
-    public void Init(float openEffectDuration, float closeEffectDuration, float delay)
+    public void Init(float openEffectDuration, float closeEffectDuration, float delay, RectTransform leftSafePlaceTarget)
     {
         _rectTransform = GetComponent<RectTransform>();
         _startPosition = _rectTransform.anchoredPosition;
@@ -25,6 +26,8 @@ public class UI_MenuButton : MonoBehaviour
         _openEffectDuration = openEffectDuration;
         _closeEffectDuration = closeEffectDuration;
         _delay = delay;
+        
+        _leftSafePlaceTarget = leftSafePlaceTarget;
     }
     
     public void OpenEffect()
@@ -40,6 +43,6 @@ public class UI_MenuButton : MonoBehaviour
         transform.localScale = Vector3.one;
         _rectTransform.anchoredPosition = _startPosition;
         if(_closeTween != null) _closeTween.Complete();
-        _closeTween = transform.DOLocalMove(new Vector3(-1000,0,0),_closeEffectDuration).SetRelative(true).SetEase(Ease.InCubic).SetDelay(_delay);
+        _closeTween = transform.DOLocalMove(new Vector3(_leftSafePlaceTarget.localPosition.x,0,0),_closeEffectDuration).SetRelative(true).SetEase(Ease.InCubic).SetDelay(_delay);
     }
 }

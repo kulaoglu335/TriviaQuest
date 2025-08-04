@@ -52,9 +52,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 673a0272bb811fa43ae600be0190f096, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _rankText: {fileID: 752097088268867428}
-  _nicknameText: {fileID: 133615830924254525}
-  _scoreText: {fileID: 1873731367663306243}
+  rankText: {fileID: 752097088268867428}
+  nicknameText: {fileID: 133615830924254525}
+  scoreText: {fileID: 1873731367663306243}
 --- !u!1 &2877044420881776509
 GameObject:
   m_ObjectHideFlags: 0
@@ -200,7 +200,6 @@ GameObject:
   - component: {fileID: 5059564821204769654}
   - component: {fileID: 2462963163624870193}
   - component: {fileID: 5839145084675640440}
-  - component: {fileID: 4125479389481476952}
   m_Layer: 5
   m_Name: BG
   m_TagString: Untagged
@@ -225,7 +224,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 570, y: 75}
+  m_SizeDelta: {x: 570, y: 65}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2462963163624870193
 CanvasRenderer:
@@ -255,7 +254,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 58db7d84a66e35042bde0cfbbce1e1bc, type: 3}
+  m_Sprite: {fileID: -6045235674028870251, guid: 7ed010a2b51d0fb4f9fee6a47b1334fd, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -265,21 +264,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 3
---- !u!114 &4125479389481476952
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5472046267479652153}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cfabb0440166ab443bba8876756fdfa9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_EffectColor: {r: 0, g: 0, b: 0, a: 0.5}
-  m_EffectDistance: {x: 4, y: -4}
-  m_UseGraphicAlpha: 1
 --- !u!1 &7457081014457150416
 GameObject:
   m_ObjectHideFlags: 0

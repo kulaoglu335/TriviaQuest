@@ -12,6 +12,7 @@ public class M_Menu : MonoBehaviour
     [SerializeField] private GameObject menuCanvas;
     [SerializeField] private UI_MenuButton playButton;
     [SerializeField] private UI_MenuButton leaderBoardButton;
+    [SerializeField] private RectTransform leftSafePlaceTarget;
     public float buttonsOpenAnimDuration;
     public float buttonsCloseAnimDuration;
     public float buttonsDelayDuration;
@@ -44,10 +45,10 @@ public class M_Menu : MonoBehaviour
         lbOpenButton.onClick.AddListener(() => OnLeaderboardOpenClicked?.Invoke());
         lbCloseButton.onClick.AddListener(() => OnLeaderboardCloseClicked?.Invoke());
         qOpenButton.onClick.AddListener(() => OnQuestOpenClicked?.Invoke());
-        //qCloseButton.onClick.AddListener(() => OnQuestCloseClicked?.Invoke());
+        qCloseButton.onClick.AddListener(() => OnQuestCloseClicked?.Invoke());
         
-        playButton.Init(buttonsOpenAnimDuration,buttonsCloseAnimDuration,0);
-        leaderBoardButton.Init(buttonsOpenAnimDuration,buttonsCloseAnimDuration,buttonsDelayDuration);
+        playButton.Init(buttonsOpenAnimDuration,buttonsCloseAnimDuration,0, leftSafePlaceTarget);
+        leaderBoardButton.Init(buttonsOpenAnimDuration,buttonsCloseAnimDuration,buttonsDelayDuration, leftSafePlaceTarget);
         
         lbCanvas.SetActive(false);
         lbPanel.SetActive(false);
@@ -103,8 +104,10 @@ public class M_Menu : MonoBehaviour
     
     public void CloseQuestUI()
     {
-        menuCanvas.SetActive(true);
         qPanel.SetActive(false);
         qCanvas.SetActive(false);
+        menuCanvas.SetActive(true);
+        playButton.OpenEffect();
+        leaderBoardButton.OpenEffect();
     }
 }

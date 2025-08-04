@@ -9,6 +9,7 @@ public class UI_Category : MonoBehaviour
 {
     [SerializeField] private List<CategoryInfoClass> categoryInfos = new List<CategoryInfoClass>();
     [SerializeField] private List<Image> colorChangeImages;
+    private Tween _iconTween;
 
     [System.Serializable]
     public class CategoryInfoClass
@@ -24,12 +25,13 @@ public class UI_Category : MonoBehaviour
         int index = categoryInfos.FindIndex(c => c.categoryName.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
         Color32 newCategoryColor = categoryInfos[index].categoryColor;
 
+        if(_iconTween != null) _iconTween.Complete();
         for (int i = 0; i < categoryInfos.Count; i++)
         {
             if (i == index)
             {
                 categoryInfos[i].categoryIcon.SetActive(true);
-                categoryInfos[i].iconAnimation.DORestart();
+                StartCoroutine(StartIconAnim(i));
             }
             else
             {
@@ -41,5 +43,11 @@ public class UI_Category : MonoBehaviour
         {
             colorChangeImages[i].DOColor(newCategoryColor,0.5f);
         }
+    }
+
+    private IEnumerator StartIconAnim(int index)
+    {
+        yield return null;
+        categoryInfos[index].iconAnimation.DORestart();
     }
 }
