@@ -27,6 +27,7 @@ public class M_LeaderBoard : MonoBehaviour
     private int _currentPage = 0;
     
     private string _leaderboardURL = string.Empty;
+    private enum PageDirection { None, Right = 1, Left = 2 }
 
     private void Awake()
     {
@@ -63,7 +64,7 @@ public class M_LeaderBoard : MonoBehaviour
         if (_isLastPage) return;
         
         _currentPage++;
-        StartCoroutine(LoadLeaderboardPage(_currentPage,true,true,1,false,0));
+        StartCoroutine(LoadLeaderboardPage(_currentPage,true,true,PageDirection.Right,false,0));
     }
 
     private void OnClick_PreviousPage()
@@ -71,7 +72,7 @@ public class M_LeaderBoard : MonoBehaviour
         if (_currentPage > 0)
         {
             _currentPage--;
-            StartCoroutine(LoadLeaderboardPage(_currentPage,true,true,2,false,0));
+            StartCoroutine(LoadLeaderboardPage(_currentPage,true,true,PageDirection.Left,false,0));
         }
     }
     #endregion
@@ -82,7 +83,7 @@ public class M_LeaderBoard : MonoBehaviour
     {
         _currentPage = 0;
         _leaderboardURL = leaderboardURL;
-        StartCoroutine(LoadLeaderboardPage(_currentPage,false,true,1,true,delay));
+        StartCoroutine(LoadLeaderboardPage(_currentPage,false,true,PageDirection.Right,true,delay));
     }
 
     public void FinishLeaderboard()
@@ -91,43 +92,29 @@ public class M_LeaderBoard : MonoBehaviour
         _currentData = null;
     }
     
-    private IEnumerator LoadLeaderboardPage(int page,bool closeAnimNeeded,bool openAnimNeeded, int leftOrRightPage,bool isFirstOpen,float delay)
+    private IEnumerator LoadLeaderboardPage(int page, bool closeAnimNeeded, bool openAnimNeeded, PageDirection direction, bool isFirstOpen, float delay)
     {
-        //leftOrRight=1 means right page
-        //leftOrRight=2 means left page
-        
         yield return StartCoroutine(FetchLeaderboard(page));
         var data = _currentData;
 
         _isLastPage = data.is_last;
         uiHandler.UpdatePageText(_currentPage);
 
-        if (isFirstOpen)
-        {
-            for (int i = 0; i < _spawnedSlots.Count; i++)
-            {
-                _spawnedSlots[i].gameObject.SetActive(false);
-            }
-        }
+        if (isFirstOpen) DeactivateAllSlots();
         
-        int firstAnimType = 0;
-        int secondAnimType = 0;
-        if (closeAnimNeeded)
-        {
-            if (leftOrRightPage == 1) firstAnimType = 1;
-            else if (leftOrRightPage == 2) firstAnimType = 3;
-        }
-        if (openAnimNeeded)
-        {
-            if (leftOrRightPage == 1) secondAnimType = 2;
-            else if (leftOrRightPage == 2) secondAnimType = 4;
-        }
+        var (firstAnimType, secondAnimType) = DetermineAnimTypes(direction, closeAnimNeeded, openAnimNeeded);
         
         yield return new WaitForSeconds(delay);
         
         for (int i = 0; i < _spawnedSlots.Count; i++)
         {
-            StartCoroutine(_spawnedSlots[i].ApplyAnim(slotMoveDuration, i*slotMoveDelay, firstAnimType,secondAnimType,slotHorizontalDistance,data.data[i]));
+            StartCoroutine(_spawnedSlots[i].ApplyAnim(
+                slotMoveDuration, 
+                i*slotMoveDelay,
+                firstAnimType,
+                secondAnimType,
+                slotHorizontalDistance,
+                data.data[i]));
         }
     }
     
@@ -152,6 +139,41 @@ public class M_LeaderBoard : MonoBehaviour
         {
             _currentData = null;
         }
+    }
+    
+    private void DeactivateAllSlots()
+    {
+        for (int i = 0; i < _spawnedSlots.Count; i++)
+        {
+            _spawnedSlots[i].gameObject.SetActive(false);
+        }
+    }
+    
+    private (int firstAnim, int secondAnim) DetermineAnimTypes(PageDirection direction, bool closeNeeded, bool openNeeded)
+    {
+        int firstAnim = 0, secondAnim = 0;
+
+        if (closeNeeded)
+        {
+            firstAnim = direction switch
+            {
+                PageDirection.Right => 1,
+                PageDirection.Left => 3,
+                _ => 0
+            };
+        }
+
+        if (openNeeded)
+        {
+            secondAnim = direction switch
+            {
+                PageDirection.Right => 2,
+                PageDirection.Left => 4,
+                _ => 0
+            };
+        }
+
+        return (firstAnim, secondAnim);
     }
 
     #endregion

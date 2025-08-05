@@ -8,10 +8,10 @@ public class M_Game : MonoBehaviour
     public static M_Game I { get; private set; }
 
     [Header("Q/A Configs")] 
-    public int correctScore;
-    public int incorrectScore;
-    public int timeoutScore;
-    public float questionDuration;
+    [SerializeField] private int correctScore;
+    [SerializeField] private int incorrectScore;
+    [SerializeField] private int timeoutScore;
+    [SerializeField] private float questionDuration;
 
     [Header("Data Configs")]
     [SerializeField] private string leaderboardURLFormatEditor;
